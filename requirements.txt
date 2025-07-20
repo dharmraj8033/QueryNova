@@ -1,0 +1,10 @@
+requests
+httpx
+beautifulsoup4
+openai
+serpapi
+flask
+streamlit
+python-dotenv
+pytest
+pytest-asyncio
