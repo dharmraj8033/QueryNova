@@ -3,9 +3,6 @@ httpx
 beautifulsoup4
 openai
 serpapi
-flask
 streamlit
 python-dotenv
 numpy
-pytest
-pytest-asyncio
