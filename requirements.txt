@@ -6,5 +6,6 @@ serpapi
 flask
 streamlit
 python-dotenv
+numpy
 pytest
 pytest-asyncio
