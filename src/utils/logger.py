@@ -1,8 +1,19 @@
 import logging
+import sys
 
-logger = logging.getLogger('querynova')
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-formatter = logging.Formatter('[%(asctime)s] %(levelname)s] - %(name)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+
+def _configure() -> logging.Logger:
+	logger = logging.getLogger("querynova")
+	if logger.handlers:
+		return logger
+
+	logger.setLevel(logging.INFO)
+	handler = logging.StreamHandler(stream=sys.stdout)
+	formatter = logging.Formatter("[%(asctime)s] %(levelname)s - %(name)s - %(message)s")
+	handler.setFormatter(formatter)
+	logger.addHandler(handler)
+	logger.propagate = False
+	return logger
+
+
+logger = _configure()

@@ -1,15 +1,51 @@
+# Streamlit Cloud Configuration
+# This file configures the theme and behavior of your Streamlit app
+
 [theme]
-primaryColor="#667eea"
-backgroundColor="#0f0c29"
-secondaryBackgroundColor="#1e1e2e"
-textColor="#ffffff"
-font="sans serif"
+# Primary theme: "light" or "dark"
+base = "dark"
+
+# Accent color (used for buttons, links, etc.)
+primaryColor = "#4A90E2"
+
+# Main background color
+backgroundColor = "#0E1117"
+
+# Secondary background (sidebar, containers)
+secondaryBackgroundColor = "#262730"
+
+# Text color
+textColor = "#FAFAFA"
+
+# Font family
+font = "sans serif"
 
 [server]
-headless = true
-port = 8501
-enableCORS = false
+# Enable CORS for API integrations
+enableCORS = true
+
+# Enable XSRF protection
 enableXsrfProtection = true
 
+# Max upload size (in MB)
+maxUploadSize = 200
+
+# Run on save (for development)
+runOnSave = true
+
 [browser]
+# Gather usage stats (set to false for privacy)
 gatherUsageStats = false
+
+# Server address (useful for development)
+serverAddress = "localhost"
+
+# Server port
+serverPort = 8501
+
+[runner]
+# Auto-rerun on file changes
+magicEnabled = true
+
+# Fast rerun (skip unchanged cached functions)
+fastReruns = true

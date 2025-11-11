@@ -1,0 +1,23 @@
+# QueryNova Theme Presets
+# Developers can extend/override these palettes within Streamlit or CSS
+presets:
+  light:
+    background: "#f6f7fb"
+    surface: "rgba(255, 255, 255, 0.75)"
+    primary: "#5465FF"
+    secondary: "#7699FF"
+    accent: "#FF9F1C"
+    text: "#1B1F3B"
+    muted_text: "#5A6074"
+    border: "rgba(84, 101, 255, 0.25)"
+    shadow: "0 12px 32px rgba(84, 101, 255, 0.12)"
+  dark:
+    background: "#0B0F1C"
+    surface: "rgba(21, 28, 43, 0.65)"
+    primary: "#7A5AF5"
+    secondary: "#2CB1BC"
+    accent: "#FF6B6B"
+    text: "#F5F6FF"
+    muted_text: "#A0A8C3"
+    border: "rgba(122, 90, 245, 0.35)"
+    shadow: "0 16px 40px rgba(12, 19, 31, 0.55)"

@@ -37,3 +37,13 @@ Thumbs.db
 # Database and logs
 *.db
 *.log
+
+# Cache and temporary files
+data/cache/
+data/query_cache.db
+.tmp
+.todo
+test_*.py
+tmp_*.py
+check_api_keys.py
+validate_startup.py
