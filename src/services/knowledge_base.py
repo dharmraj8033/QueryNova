@@ -7,7 +7,6 @@ from dataclasses import dataclass, field
 from typing import Dict, Iterable, List
 
 import requests
-from pypdf import PdfReader
 
 from src.utils.logger import logger
 
@@ -62,10 +61,12 @@ class KnowledgeBase:
         }
 
     def _extract_content(self, path: str) -> str:
+        """Extract text content from uploaded files (TXT, MD only)."""
+        # PDF support removed - use TXT or Markdown files instead
         if path.lower().endswith(".pdf"):
-            reader = PdfReader(path)
-            texts = [page.extract_text() or "" for page in reader.pages]
-            return "\n".join(texts)
+            logger.warning("PDF files are not supported. Please convert to TXT or MD format.")
+            return f"[PDF file: {os.path.basename(path)} - Please convert to text format]"
+        
         with open(path, "r", encoding="utf-8", errors="ignore") as handle:
             return handle.read()
 

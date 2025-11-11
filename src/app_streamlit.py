@@ -780,8 +780,8 @@ def main():
         with upload_col1:
             uploaded_file = st.file_uploader(
                 "Upload Document",
-                type=["txt", "pdf", "md"],
-                help="Augment search with your own documents",
+                type=["txt", "md"],
+                help="Upload TXT or Markdown files to augment search results",
             )
             
             if uploaded_file:
