@@ -646,24 +646,18 @@ def validate_api_keys() -> None:
     
     serpapi_key = get_secret("SERPAPI_API_KEY")
     gemini_key = get_secret("GEMINI_API_KEY") or get_secret("GOOGLE_API_KEY")
-    openai_key = get_secret("OPENAI_API_KEY")
     
     issues = []
-    warnings = []
     
     if not serpapi_key:
         issues.append("🔴 **SerpAPI Key Missing** - Web search will not work")
     
-    # Check AI provider
+    # Check Gemini AI provider
     ai_provider = get_ai_provider()
     if ai_provider.is_available():
-        provider_name = ai_provider.get_provider_name()
-        if provider_name == "gemini":
-            st.sidebar.success("✅ **AI: Google Gemini** (Free tier)")
-        elif provider_name == "openai":
-            st.sidebar.success("✅ **AI: OpenAI GPT-4o-mini**")
+        st.sidebar.success("✅ **AI: Google Gemini** (Free tier)")
     else:
-        issues.append("🔴 **No AI Provider** - Add Gemini or OpenAI key")
+        issues.append("🔴 **Gemini API Key Missing** - AI features will not work")
     
     if issues:
         st.sidebar.error("⚠️ **Configuration Issues**")
@@ -675,23 +669,21 @@ def validate_api_keys() -> None:
             **Add your API keys to `.streamlit/secrets.toml`:**
             
             ```toml
-            SERPAPI_API_KEY = "your-key-here"
-            GEMINI_API_KEY = "your-gemini-key"  # FREE!
-            # OR
-            OPENAI_API_KEY = "sk-your-key-here"
+            SERPAPI_API_KEY = "your-serpapi-key"
+            GEMINI_API_KEY = "your-gemini-key"
             ```
             
             **Get FREE API Keys:**
-            - [Google Gemini](https://makersuite.google.com/app/apikey) (FREE, recommended)
+            - [Google Gemini](https://makersuite.google.com/app/apikey) ⭐ **FREE & Recommended**
             - [SerpAPI](https://serpapi.com/) (100 free searches/month)
-            - [OpenAI](https://platform.openai.com/api-keys) (paid)
+            
+            **Gemini Benefits:**
+            - 100% FREE (no credit card)
+            - 1,500 requests per day
+            - Fast & high quality
             
             **Then restart the app.**
             """)
-    
-    if warnings:
-        for warning in warnings:
-            st.sidebar.warning(warning)
 
 
 def main():
