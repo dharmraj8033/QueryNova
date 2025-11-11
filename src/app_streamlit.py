@@ -642,8 +642,10 @@ SERPAPI_API_KEY=your-key
 def validate_api_keys() -> None:
     """Validate API keys are configured and show helpful warnings if not."""
     from utils.secrets import get_secret
+    from utils.ai_provider import get_ai_provider
     
     serpapi_key = get_secret("SERPAPI_API_KEY")
+    gemini_key = get_secret("GEMINI_API_KEY") or get_secret("GOOGLE_API_KEY")
     openai_key = get_secret("OPENAI_API_KEY")
     
     issues = []
@@ -652,24 +654,16 @@ def validate_api_keys() -> None:
     if not serpapi_key:
         issues.append("🔴 **SerpAPI Key Missing** - Web search will not work")
     
-    if not openai_key:
-        issues.append("🔴 **OpenAI Key Missing** - AI features will not work")
+    # Check AI provider
+    ai_provider = get_ai_provider()
+    if ai_provider.is_available():
+        provider_name = ai_provider.get_provider_name()
+        if provider_name == "gemini":
+            st.sidebar.success("✅ **AI: Google Gemini** (Free tier)")
+        elif provider_name == "openai":
+            st.sidebar.success("✅ **AI: OpenAI GPT-4o-mini**")
     else:
-        # Check if OpenAI key has quota
-        try:
-            from openai import OpenAI
-            client = OpenAI(api_key=openai_key)
-            # Quick test with minimal tokens
-            client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[{"role": "user", "content": "Hi"}],
-                max_tokens=1
-            )
-        except Exception as e:
-            error_str = str(e)
-            if "429" in error_str or "insufficient_quota" in error_str or "quota" in error_str.lower():
-                warnings.append("💳 **OpenAI Quota Exceeded** - AI features will use fallback mode")
-                warnings.append("Add credits at: https://platform.openai.com/settings/organization/billing/overview")
+        issues.append("🔴 **No AI Provider** - Add Gemini or OpenAI key")
     
     if issues:
         st.sidebar.error("⚠️ **Configuration Issues**")
@@ -682,12 +676,15 @@ def validate_api_keys() -> None:
             
             ```toml
             SERPAPI_API_KEY = "your-key-here"
+            GEMINI_API_KEY = "your-gemini-key"  # FREE!
+            # OR
             OPENAI_API_KEY = "sk-your-key-here"
             ```
             
-            **Get API Keys:**
+            **Get FREE API Keys:**
+            - [Google Gemini](https://makersuite.google.com/app/apikey) (FREE, recommended)
             - [SerpAPI](https://serpapi.com/) (100 free searches/month)
-            - [OpenAI](https://platform.openai.com/api-keys)
+            - [OpenAI](https://platform.openai.com/api-keys) (paid)
             
             **Then restart the app.**
             """)

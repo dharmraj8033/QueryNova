@@ -4,7 +4,7 @@ from __future__ import annotations
 import asyncio
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from modules.ai_filter import get_client as get_openai_client
+from src.utils.ai_provider import get_ai_provider
 from src.utils.logger import logger
 
 _DEFAULT_MODEL = "gpt-4o-mini"
@@ -27,32 +27,24 @@ class Summarizer:
 
         loop = asyncio.get_event_loop()
         prompt = self._build_prompt(query, ranked_results, knowledge_base)
-        try:
-            client = get_openai_client()
-        except Exception as exc:  # pragma: no cover - configuration runtime
-            logger.warning("OpenAI client unavailable: %s", exc)
+        provider = get_ai_provider()
+        
+        if not provider.is_available():
+            logger.warning("No AI provider available, using fallback")
             return self._fallback_summary(ranked_results)
 
         def _invoke() -> Tuple[str, List[str]]:
-            completion = client.chat.completions.create(
-                model=self.model,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are QueryNova's research analyst. Craft concise, decision-ready insight.",
-                    },
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    },
-                ],
-                max_tokens=400,
+            summary_text = provider.generate_text(
+                prompt=prompt,
+                system_prompt="You are QueryNova's research analyst. Craft concise, decision-ready insight.",
+                max_tokens=400
             )
-            if not completion.choices:
-                raise RuntimeError("Empty response from OpenAI")
-            primary = completion.choices[0].message.content or ""
-            bullets = self._extract_bullets(primary)
-            intro = primary.split("\n\n", 1)[0]
+            
+            if not summary_text:
+                raise RuntimeError("Empty response from AI provider")
+            
+            bullets = self._extract_bullets(summary_text)
+            intro = summary_text.split("\n\n", 1)[0]
             return intro.strip(), bullets
 
         try:

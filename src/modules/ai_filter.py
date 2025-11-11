@@ -2,30 +2,21 @@ import re
 from typing import Any, Dict, Iterable, Optional
 
 import numpy as np
-import openai
 from urllib.parse import urlparse
 
 from src.utils.logger import logger
-from src.utils.secrets import get_secret
-
-
-def get_openai_key() -> Optional[str]:
-    return get_secret("OPENAI_API_KEY")
-
-
-def get_client():
-    api_key = get_openai_key()
-    if not api_key:
-        raise ValueError(
-            "OPENAI_API_KEY is not configured. Add it via Streamlit secrets or environment variables."
-        )
-    return openai.OpenAI(api_key=api_key)
+from src.utils.ai_provider import get_ai_provider
 
 
 def get_embedding(text: str) -> Iterable[float]:
-    client = get_client()
-    response = client.embeddings.create(input=text, model="text-embedding-3-small")
-    return response.data[0].embedding
+    """Get text embedding using the configured AI provider (Gemini or OpenAI)."""
+    provider = get_ai_provider()
+    embedding = provider.get_embedding(text)
+    if embedding:
+        return embedding
+    # Fallback to empty embedding
+    logger.warning("No embedding available, using fallback")
+    return [0.0] * 384  # Default embedding size
 
 
 def cosine_similarity(a: Iterable[float], b: Iterable[float]) -> float:
@@ -49,7 +40,6 @@ def rank_pages(query: str, pages: Iterable[Dict[str, Any]], knowledge_base: Opti
         query_emb = []
 
     ranked = []
-    client: Optional[openai.OpenAI] = None
     for page in pages:
         text = (page.get("text") or "")[:4000]
         try:
@@ -61,7 +51,7 @@ def rank_pages(query: str, pages: Iterable[Dict[str, Any]], knowledge_base: Opti
 
         reliability = domain_reliability(page.get("url", ""))
         combined = min(max((score * 0.7) + (reliability * 0.3), 0.0), 1.0)
-        summary, insight = summarize_passage(text, client)
+        summary, insight = summarize_passage(text)
 
         if knowledge_base and knowledge_base.has_documents:
             top_snippets = knowledge_base.get_top_snippets(query, limit=1)
@@ -110,32 +100,26 @@ def domain_reliability(url: str) -> float:
     return 0.6
 
 
-def summarize_passage(text: str, client: Optional[openai.OpenAI] = None) -> tuple[str, str]:
+def summarize_passage(text: str) -> tuple[str, str]:
+    """Summarize a text passage using the configured AI provider."""
     shortened = text[:1500]
     if not shortened.strip():
         return "No content available.", ""
-    if client is None:
-        try:
-            client = get_client()
-        except Exception:
-            return _fallback_summary(shortened)
+    
+    provider = get_ai_provider()
+    if not provider.is_available():
+        return _fallback_summary(shortened)
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "Produce a two sentence summary and one actionable insight.",
-                },
-                {
-                    "role": "user",
-                    "content": shortened,
-                },
-            ],
-            max_tokens=180,
+        summary_text = provider.generate_text(
+            prompt=shortened,
+            system_prompt="Produce a two sentence summary and one actionable insight.",
+            max_tokens=180
         )
-        summary_text = response.choices[0].message.content if response.choices else ""
+        
+        if not summary_text:
+            return _fallback_summary(shortened)
+        
         summary_lines = [line.strip() for line in summary_text.split("\n") if line.strip()]
         summary = summary_lines[0] if summary_lines else summary_text[:280]
         insight = summary_lines[1] if len(summary_lines) > 1 else ""
