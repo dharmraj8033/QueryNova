@@ -556,7 +556,7 @@ def render_sidebar() -> None:
         from utils.secrets import get_secret
         
         serpapi_key = get_secret("SERPAPI_API_KEY")
-        openai_key = get_secret("OPENAI_API_KEY")
+        gemini_key = get_secret("GEMINI_API_KEY") or get_secret("GOOGLE_API_KEY")
         
         if serpapi_key:
             st.success("✅ SerpAPI Connected")
@@ -569,14 +569,27 @@ def render_sidebar() -> None:
 # Add:
 SERPAPI_API_KEY = "your-key"
 
-# Locally, create .env:
-SERPAPI_API_KEY=your-key
+# Locally, add to .streamlit/secrets.toml:
+SERPAPI_API_KEY = "your-key"
                 """)
         
-        if openai_key:
-            st.success("✅ OpenAI Connected")
+        if gemini_key:
+            st.success("✅ Gemini AI Connected")
         else:
-            st.error("❌ OpenAI Not Configured")
+            st.error("❌ Gemini Not Configured")
+            with st.expander("How to configure"):
+                st.code("""
+# Get FREE key at:
+# https://makersuite.google.com/app/apikey
+
+# In Streamlit Cloud:
+# Go to App Settings > Secrets
+# Add:
+GEMINI_API_KEY = "your-key"
+
+# Locally, add to .streamlit/secrets.toml:
+GEMINI_API_KEY = "your-key"
+                """)
         
         st.divider()
         
